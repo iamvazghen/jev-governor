@@ -28,72 +28,51 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Set up Python ${{ matrix.python-version }}
-        run: uv python install ${{ matrix.python-version }}
+      # A project venv on the matrix interpreter. `uv pip install --system` would target the
+      # runner's Debian-managed Python, which refuses installs and ignores the matrix version
+      # entirely -- so the whole matrix would silently test one interpreter, or fail.
+      - name: Create the environment
+        run: uv venv --python ${{ matrix.python-version }}
 
       - name: Install
-        run: uv pip install --system -e ".[dev]"
+        run: uv pip install -e ".[dev]"
 
-      # The suite is hermetic: no network, no TYPESAFE_API_KEY, no provider. If a change
-      # makes CI need a credential, that change is wrong -- see CONTRIBUTING.md.
+      - name: Confirm the interpreter is the one under test
+        run: uv run python -c "import sys; print(sys.version)"
+
+      # The suite is hermetic: no network, no TYPESAFE_API_KEY, no provider. If a change makes
+      # CI need a credential, that change is wrong -- see CONTRIBUTING.md.
       - name: Test
-        run: uv run --no-project pytest -q
+        run: uv run pytest -q
 
       - name: Lint
-        run: uv run --no-project ruff check src tests
+        run: uv run ruff check src tests examples scripts
 
       - name: Types
-        run: uv run --no-project mypy
+        run: uv run mypy
 
   adapter-imports:
     # The adapters import their frameworks lazily, so an uninstalled framework must fail at
-    # call time with a clear message rather than at import time. This job proves the package
-    # imports cleanly with none of the optional extras present.
+    # call time with a clear message rather than at import time. This job installs none of the
+    # optional extras and proves the package still imports cleanly.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - run: uv python install 3.12
-      - run: uv pip install --system -e .
+      - run: uv venv --python 3.12
+      - run: uv pip install -e .
       - name: Import every module with no extras installed
-        run: |
-          uv run --no-project python - <<'PY'
-          import importlib
-          for name in [
-              "jev_governor",
-              "jev_governor.adapters.openai_chat",
-              "jev_governor.adapters.hermes",
-              "jev_governor.adapters.openclaw",
-              "jev_governor.adapters.pydantic_ai",
-          ]:
-              importlib.import_module(name)
-              print("imported", name)
-
-          # And static validation must refuse clearly without jsonschema, not proceed.
-          from jev_governor.errors import JevError
-          from jev_governor.static import validate_static_arguments
-          tools = [{"name": "t", "parameters": {"type": "object"}}]
-          try:
-              validate_static_arguments(tools, "t", {})
-          except JevError as error:
-              assert "jsonschema" in str(error), error
-              print("static execution refuses without jsonschema:", error)
-          else:
-              raise SystemExit("static validation silently proceeded without jsonschema")
-          PY
+        run: uv run python scripts/check_bare_install.py
 
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - run: uv python install 3.12
       - name: Build the distribution
         run: uv build
-      - name: Check metadata
-        run: |
-          uv pip install --system twine
-          uv run --no-project twine check dist/*
+      - name: Check the metadata renders on PyPI
+        run: uvx twine check dist/*
       - uses: actions/upload-artifact@v4
         with:
           name: dist
