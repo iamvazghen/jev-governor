@@ -226,6 +226,12 @@ deliberately.
 | [docs/roadmap.md](docs/roadmap.md) | Possible improvements, with the reasoning for each |
 | [docs/adapters.md](docs/adapters.md) | Writing a `Host` for a framework not listed here |
 
+Two runnable examples: [`examples/openai_loop.py`](examples/openai_loop.py) is a complete
+governed agent loop in about fifty lines, and
+[`examples/fleet_router.py`](examples/fleet_router.py) routes across a real 18-agent roster
+covering 83 utilities — adjacent remits included, which is where a router either earns its keep
+or quietly guesses.
+
 ---
 
 ## Security
