@@ -1,0 +1,88 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "jev-governor"
+version = "0.1.0"
+description = "A calibrated System One decision layer for existing LLM agents (Hermes, Pydantic AI, OpenClaw)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "jev-governor contributors" }]
+keywords = [
+  "agents",
+  "llm",
+  "typesafe",
+  "jev",
+  "system-one",
+  "routing",
+  "hermes",
+  "pydantic-ai",
+  "openclaw",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Typing :: Typed",
+]
+
+# One runtime dependency, on purpose. This package installs into someone else's agent, and
+# every dependency it brings is a version constraint they did not ask for.
+dependencies = ["httpx>=0.24"]
+
+[project.optional-dependencies]
+# Validating a configured static payload against the tool's real JSON schema.
+static = ["jsonschema>=4.18"]
+# The model-wrapper adapter.
+pydantic-ai = ["pydantic-ai>=1.0"]
+# Native response objects for the OpenAI-compatible adapter.
+openai = ["openai>=1.40"]
+dev = [
+  "pytest>=8.0",
+  "pytest-asyncio>=0.23",
+  "ruff>=0.6",
+  "mypy>=1.11",
+  "jsonschema>=4.18",
+]
+
+[project.urls]
+Homepage = "https://github.com/iamvazghen/jev-governor"
+Repository = "https://github.com/iamvazghen/jev-governor"
+Issues = "https://github.com/iamvazghen/jev-governor/issues"
+Changelog = "https://github.com/iamvazghen/jev-governor/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jev_governor"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+ignore = [
+  # The adapters deliberately import framework internals inside functions so that an
+  # uninstalled framework is an error at call time, not at import time.
+  "PLC0415",
+]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src/jev_governor"]
+ignore_missing_imports = true
+warn_unused_ignores = false

@@ -1,0 +1,59 @@
+jev-governor
+Copyright (c) 2026 jev-governor contributors
+
+Licensed under the MIT License. See LICENSE for the full text.
+
+--------------------------------------------------------------------------------
+Independence
+--------------------------------------------------------------------------------
+
+jev-governor is an independent community project. It is not affiliated with,
+endorsed by, sponsored by, or supported by TypeSafe AI, Nous Research, Pydantic,
+or the OpenClaw project. No endorsement by any of them is claimed or implied.
+
+Product and service names used here are identified for interoperability only and
+remain the property of their respective owners.
+
+--------------------------------------------------------------------------------
+Hosted service
+--------------------------------------------------------------------------------
+
+"Jev" and "TypeSafe" name a separately hosted decision service. This repository
+distributes no model weights, API keys, usage credits, or any part of that
+service, and grants no rights to it. Use of the service is governed by TypeSafe's
+own terms: https://docs.typesafe.ai/legal
+
+Running this package makes network requests to that service with a key you supply
+and pays for calls at the provider's rates. Nothing here changes those terms.
+
+--------------------------------------------------------------------------------
+Relationship to Hermes Agent
+--------------------------------------------------------------------------------
+
+jev-governor contains no source code from Hermes Agent
+(https://github.com/NousResearch/hermes-agent, Copyright (c) 2025 Nous Research,
+MIT License). It is a standalone package.
+
+The adapter in src/jev_governor/adapters/hermes.py interoperates with Hermes by
+calling its public-facing agent object, and docs/install-hermes.md describes a
+small patch a user applies to their own Hermes checkout. Neither copies nor
+redistributes Hermes source.
+
+This package supersedes an earlier approach that forked Hermes Agent outright.
+The fork carried the whole upstream tree in order to add roughly 670 lines, which
+meant every upstream release had to be merged rather than simply installed
+alongside. A standalone package integrates architecturally instead: a host
+protocol with six methods, so the decision layer and the agent framework can be
+versioned, tested, and upgraded independently of one another.
+
+--------------------------------------------------------------------------------
+Dependencies
+--------------------------------------------------------------------------------
+
+Dependencies retain their own copyrights and licenses. The MIT license of this
+project does not relicense them.
+
+  httpx        BSD-3-Clause  (required)
+  jsonschema   MIT           (optional, extra: static)
+  pydantic-ai  MIT           (optional, extra: pydantic-ai)
+  openai       Apache-2.0    (optional, extra: openai)
